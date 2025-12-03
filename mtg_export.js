@@ -6,22 +6,13 @@ chrome.runtime.onMessage.addListener(
                 break;    
             case 'add_all_cards_ck':
                 sendResponse({cards: addAllCardsCK()});
-                break;    
+                break;
+            case 'export_cards_xlsx':
+                exportCardsXlsx(request.data);
+                break;
         }
     }
 );
-
-class Card {
-    name = '';
-    edition = '';
-    rarity = '';
-    condition = '';
-    link = '';
-    count = 1;
-    price = 1.0;
-    language = '';
-    material = '';
-}
 
 function addAllCardsMint() {
     var cards = [];
@@ -59,7 +50,29 @@ function addAllCardsCK() {
         let price = node.querySelector('div.item-price-wrapper small').textContent;
         card.price = parseFloat(price.replace(/[^\d.-]/g, ''));
         cards.push(card);
-        console.log(card);
     });
     return cards;
+}
+
+function exportCardsXlsx(cards) {
+    var data = [
+        ['N°', 'Quien pide', 'Nombre de la carta', 'Cantidad', 'Precio', 'Total', 'Condición 1', 'Condición 2', 'Link']
+    ];
+
+    var totalCount = 0;
+    var totalAmount = 0;
+    cards.forEach(card => {
+        let cardName = `${card.name}${card.material.length > 0 ? ` (${card.material})` : ""}`;
+        let total = card.count * card.price;
+        totalCount += card.count;
+        totalAmount += total;
+        let condition = card.condition.length > 0 ? card.condition : 'NM-M';
+        data.push(['', '', cardName, card.count, card.price, total, condition, condition, card.link]);
+    });
+    data.push(['', '', '', totalCount, '', totalAmount, '', '', '']);
+
+    let workbook = XLSX.utils.book_new();
+    let worksheet = XLSX.utils.aoa_to_sheet(data);
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+    XLSX.writeFile(workbook, "cards.xlsx");
 }

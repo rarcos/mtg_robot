@@ -22,7 +22,12 @@
         "https://www.mtgmintcard.com/shopping-cart",
         "https://www.cardkingdom.com/cart"
       ],
-      "js": ["mtg_export.js"]
+      "js": [
+        "xlsx.mini.min.js",
+        "card.js",
+        "mtg_export.js"
+      ],
+      "run_at": "document_end"
     }
   ]
 }

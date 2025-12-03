@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "MTG Robot",
+  "description": "MTG Robot",
+  "version": "1.0",
+  "permissions": [
+    "contextMenus",
+    "activeTab",
+    "downloads"
+  ],
+  "background": {
+    "service_worker": "mtg_actions.js",
+    "type": "module"
+  },
+  "host_permissions": [
+    "https://www.mtgmintcard.com/shopping-cart",
+    "https://www.cardkingdom.com/cart"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.mtgmintcard.com/shopping-cart",
+        "https://www.cardkingdom.com/cart"
+      ],
+      "js": ["mtg_export.js"]
+    }
+  ]
+}

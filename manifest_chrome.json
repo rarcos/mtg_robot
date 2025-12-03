@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "MTG Robot",
   "description": "MTG Robot",
-  "version": "1.0",
+  "version": "1.1",
   "permissions": [
     "contextMenus",
     "activeTab",
@@ -23,7 +23,7 @@
         "https://www.cardkingdom.com/cart"
       ],
       "js": [
-        "xlsx.mini.min.js",
+        "xlsx.bundle.js",
         "card.js",
         "mtg_export.js"
       ],

@@ -8,6 +8,10 @@
     "activeTab",
     "downloads"
   ],
+  "icons": {
+    "32": "icon.png",
+    "64": "icon@2x.png"
+  },
   "background": {
     "service_worker": "mtg_actions.js",
     "type": "module"

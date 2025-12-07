@@ -8,8 +8,14 @@
     "activeTab",
     "downloads"
   ],
+  "icons": {
+    "32": "icon.png",
+    "64": "icon@2x.png"
+  },
   "background": {
-    "scripts": ["mtg_actions.js"]
+    "scripts": [
+      "mtg_actions.js"
+    ]
   },
   "host_permissions": [
     "https://www.mtgmintcard.com/shopping-cart",

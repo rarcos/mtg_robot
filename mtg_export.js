@@ -1,14 +1,20 @@
+const COLUMNS = ['N°', 'Quien pide', 'Nombre de la carta', 'Cantidad', 'Precio', 'Total', 'Condición 1', 'Condición 2', 'Link'];
+const URL_CARDKINGDOM_BASE = 'https://www.cardkingdom.com';
+
 chrome.runtime.onMessage.addListener(
-    function(request, sender, sendResponse) {
-        switch(request.action) {
+    function (request, sender, sendResponse) {
+        switch (request.action) {
             case 'add_all_cards_mint':
-                sendResponse({cards: addAllCardsMint()});
-                break;    
+                sendResponse({ cards: addAllCardsMint() });
+                break;
             case 'add_all_cards_ck':
-                sendResponse({cards: addAllCardsCK()});
+                sendResponse({ cards: addAllCardsCK() });
                 break;
             case 'export_cards_xlsx':
                 exportCardsXlsx(request.data);
+                break;
+            case 'export_cards_csv':
+                sendResponse({ data: exportCardsCsv(request.data) });
                 break;
         }
     }
@@ -16,7 +22,7 @@ chrome.runtime.onMessage.addListener(
 
 function addAllCardsMint() {
     var cards = [];
-    document.querySelectorAll('table#ShoppingCartDetail tr[id^=ShoppingCartRow]').forEach(function(row) {
+    document.querySelectorAll('table#ShoppingCartDetail tr[id^=ShoppingCartRow]').forEach(function (row) {
         let card = new Card();
         let link = row.childNodes[3].childNodes[1];
         card.name = link.textContent;
@@ -33,7 +39,7 @@ function addAllCardsMint() {
 
 function addAllCardsCK() {
     var cards = [];
-    document.querySelectorAll('div.row.cart-item-wrapper').forEach(function(node) {
+    document.querySelectorAll('div.row.cart-item-wrapper').forEach(function (node) {
         let card = new Card();
         let link = node.querySelector('a.product-link');
         card.name = link.querySelector('span.title').textContent.split('\n')[0].trim();
@@ -41,7 +47,7 @@ function addAllCardsCK() {
         card.edition = edition[0].trim();
         card.rarity = edition[1].trim().replace('(', '').replace(')', '');
         card.condition = link.querySelector('span.style').textContent.trim();
-        let url = URL.parse(link.getAttribute('href').trim(), 'https://www.cardkingdom.com');
+        let url = URL.parse(link.getAttribute('href').trim(), URL_CARDKINGDOM_BASE);
         card.link = url.toString();
 
         let count = node.querySelector('a.btn.btn-default.dropdown-toggle').textContent;
@@ -55,12 +61,11 @@ function addAllCardsCK() {
 }
 
 function exportCardsXlsx(cards) {
-    let personName = prompt("Ingrese su nombre:", "Nombre");
+    let personName = promptForName();
     var data = [];
 
     cards.forEach(card => {
         let cardName = `${card.name}${card.material.length > 0 ? ` (${card.material})` : ""}`;
-        let condition = card.condition.length > 0 ? card.condition : 'NM-M';
         data.push({
             'n': '',
             'personName': personName,
@@ -68,8 +73,8 @@ function exportCardsXlsx(cards) {
             'count': card.count,
             'price': card.price,
             'total': 0,
-            'condition1': condition,
-            'condition2': condition,
+            'condition1': card.condition,
+            'condition2': card.condition,
             'link': card.link
         });
     });
@@ -77,8 +82,8 @@ function exportCardsXlsx(cards) {
     let workbook = XLSX.utils.book_new();
     let worksheet = XLSX.utils.aoa_to_sheet([]);
     XLSX.utils.sheet_add_json(worksheet, data, { origin: 'B2' });
-    XLSX.utils.sheet_add_aoa(worksheet, [['N°', 'Quien pide', 'Nombre de la carta', 'Cantidad', 'Precio', 'Total', 'Condición 1', 'Condición 2', 'Link']], { origin: 'B2' });
-    XLSX.utils.sheet_add_aoa(worksheet, [['', '', '', { f: `SUM(E3:E${data.length + 2})` }, '',{ f: `SUM(G3:G${data.length + 2})` }, '', '', '']], { origin: `B${data.length + 3}` });
+    XLSX.utils.sheet_add_aoa(worksheet, [COLUMNS], { origin: 'B2' });
+    XLSX.utils.sheet_add_aoa(worksheet, [['', '', '', { f: `SUM(E3:E${data.length + 2})` }, '', { f: `SUM(G3:G${data.length + 2})` }, '', '', '']], { origin: `B${data.length + 3}` });
 
     data.forEach((item, index) => {
         let row = (index + 3);
@@ -86,17 +91,11 @@ function exportCardsXlsx(cards) {
         worksheet[`G${row}`].f = `E${row}*F${row}`;
     });
 
-    if(!worksheet["!cols"]) worksheet["!cols"] = [];
-    if(!worksheet["!cols"][0]) worksheet["!cols"][0] = {wch: 8};
-    if(!worksheet["!cols"][1]) worksheet["!cols"][1] = {wch: 8};
-    if(!worksheet["!cols"][2]) worksheet["!cols"][2] = {wch: 8};
-    if(!worksheet["!cols"][3]) worksheet["!cols"][3] = {wch: 8};
-    if(!worksheet["!cols"][4]) worksheet["!cols"][4] = {wch: 8};
-    if(!worksheet["!cols"][5]) worksheet["!cols"][5] = {wch: 8};
-    if(!worksheet["!cols"][6]) worksheet["!cols"][6] = {wch: 8};
-    if(!worksheet["!cols"][7]) worksheet["!cols"][7] = {wch: 8};
-    if(!worksheet["!cols"][8]) worksheet["!cols"][8] = {wch: 8};
-    if(!worksheet["!cols"][9]) worksheet["!cols"][9] = {wch: 8};
+    if (!worksheet["!cols"]) worksheet["!cols"] = [];
+
+    for (let col = 0; col < 10; col++) {
+        if (!worksheet["!cols"][col]) worksheet["!cols"][col] = { wch: 8 };
+    }
 
     worksheet["!cols"][0].wpx = 20;
     worksheet["!cols"][1].wpx = 20;
@@ -158,4 +157,27 @@ function exportCardsXlsx(cards) {
 
     XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
     XLSX.writeFile(workbook, "cards.xlsx");
+}
+
+function exportCardsCsv(cards) {
+    let personName = promptForName();
+    var data = [COLUMNS.join(';')];
+    var totalCount = 0;
+    var totalAmount = 0;
+
+    cards.forEach(card => {
+        let cardName = `${card.name}${card.material.length > 0 ? ` (${card.material})` : ""}`;
+        let total = card.count * card.price;
+        totalCount += card.count;
+        totalAmount += total;
+        data.push(`;${personName};${cardName};${card.count};${card.price};${total};${card.condition};${card.condition};${card.link}`);
+    });
+
+    data.push(`;;;${totalCount};;${totalAmount};;;`);
+
+    return data.join("\n");
+}
+
+function promptForName() {
+    return prompt("Ingrese su nombre:", "Nombre");
 }

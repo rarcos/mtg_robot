@@ -2,7 +2,7 @@ class Card {
     name = '';
     edition = '';
     rarity = '';
-    condition = '';
+    condition = 'NM-M';
     link = '';
     count = 1;
     price = 1.0;

@@ -1,4 +1,4 @@
-class Card {
+export class Card {
     name = '';
     edition = '';
     rarity = '';

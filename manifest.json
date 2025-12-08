@@ -6,13 +6,19 @@
   "permissions": [
     "contextMenus",
     "activeTab",
-    "downloads"
+    "downloads",
+    "webNavigation",
+    "scripting"
   ],
   "icons": {
     "32": "icon.png",
     "64": "icon@2x.png"
   },
-  "background": {
+  "chromium:background": {
+    "service_worker": "mtg_actions.js",
+    "type": "module"
+  },
+  "firefox:background": {
     "scripts": [
       "mtg_actions.js"
     ]
@@ -28,22 +34,9 @@
         "https://www.cardkingdom.com/cart"
       ],
       "js": [
-        "xlsx.bundle.js",
-        "card.js",
         "mtg_export.js"
       ],
       "run_at": "document_end"
     }
-  ],
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "@rarcos-mtg-robot",
-      "strict_min_version": "140.0",
-      "data_collection_permissions": {
-        "required": [
-          "none"
-        ]
-      }
-    }
-  }
+  ]
 }

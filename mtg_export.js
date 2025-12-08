@@ -1,28 +1,28 @@
+import { Card } from './scripts/card.js';
+
 const COLUMNS = ['N°', 'Quien pide', 'Nombre de la carta', 'Cantidad', 'Precio', 'Total', 'Condición 1', 'Condición 2', 'Link'];
 const URL_CARDKINGDOM_BASE = 'https://www.cardkingdom.com';
 
-chrome.runtime.onMessage.addListener(
-    function (request, sender, sendResponse) {
-        switch (request.action) {
-            case 'add_all_cards_mint':
-                sendResponse({ cards: addAllCardsMint() });
-                break;
-            case 'add_all_cards_ck':
-                sendResponse({ cards: addAllCardsCK() });
-                break;
-            case 'export_cards_xlsx':
-                exportCardsXlsx(request.data);
-                break;
-            case 'export_cards_csv':
-                sendResponse({ data: exportCardsCsv(request.data) });
-                break;
-        }
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    switch (request.action) {
+        case 'add_all_cards_mint':
+            sendResponse({ cards: addAllCardsMint() });
+            break;
+        case 'add_all_cards_ck':
+            sendResponse({ cards: addAllCardsCK() });
+            break;
+        case 'export_cards_xlsx':
+            exportCardsXlsx(request.data);
+            break;
+        case 'export_cards_csv':
+            sendResponse({ data: exportCardsCsv(request.data) });
+            break;
     }
-);
+});
 
 function addAllCardsMint() {
     var cards = [];
-    document.querySelectorAll('table#ShoppingCartDetail tr[id^=ShoppingCartRow]').forEach(function (row) {
+    document.querySelectorAll('table#ShoppingCartDetail tr[id^=ShoppingCartRow]').forEach(row => {
         let card = new Card();
         let link = row.childNodes[3].childNodes[1];
         card.name = link.textContent;
@@ -39,7 +39,7 @@ function addAllCardsMint() {
 
 function addAllCardsCK() {
     var cards = [];
-    document.querySelectorAll('div.row.cart-item-wrapper').forEach(function (node) {
+    document.querySelectorAll('div.row.cart-item-wrapper').forEach(node => {
         let card = new Card();
         let link = node.querySelector('a.product-link');
         card.name = link.querySelector('span.title').textContent.split('\n')[0].trim();

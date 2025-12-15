@@ -1,6 +1,6 @@
 {
     "name": "mtg_robot",
-    "version": "1.2.2",
+    "version": "1.2.3",
     "scripts": {
         "build": "extension build",
         "dev": "extension dev",

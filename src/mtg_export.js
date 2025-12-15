@@ -49,8 +49,15 @@ function addAllCardsCK() {
         card.condition = link.querySelector('span.style').textContent.trim();
         let url = URL.parse(link.getAttribute('href').trim(), URL_CARDKINGDOM_BASE);
         card.link = url.toString();
-        let count = node.querySelector('a.btn.btn-default.dropdown-toggle').textContent;
-        card.count = parseInt(count);
+        let countNode = node.querySelector('a.btn.btn-default.dropdown-toggle');
+        let quantityNode = node.querySelector('input[name=quantityBox]');
+        if (countNode != null) {
+            card.count = parseInt(countNode.textContent);
+        } else if (quantityNode != null) {
+            card.count = parseInt(quantityNode.value);
+        } else {
+            return;
+        }
         let price = node.querySelector('div.item-price-wrapper').textContent;
         card.price = parseFloat(price.replace(/[^\d.-]/g, ''));
         cards.push(card);

@@ -1,6 +1,6 @@
 import { Card } from './scripts/card.js';
 
-const COLUMNS = ['N°', 'Quien pide', 'Nombre de la carta', 'Cantidad', 'Precio', 'Total', 'Condición 1', 'Condición 2', 'Link'];
+const COLUMNS = ['Quien pide', 'Nombre de la carta', 'Cantidad', 'Precio', 'Total', 'Condición 1', 'Condición 2', 'Link'];
 const URL_CARDKINGDOM_BASE = 'https://www.cardkingdom.com';
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -65,7 +65,6 @@ function exportCardsXlsx(cards) {
     cards.forEach(card => {
         let cardName = `${card.name}${card.material.length > 0 ? ` (${card.material})` : ""}`;
         data.push({
-            'n': '',
             'personName': personName,
             'cardName': cardName,
             'count': card.count,
@@ -79,29 +78,27 @@ function exportCardsXlsx(cards) {
 
     let workbook = XLSX.utils.book_new();
     let worksheet = XLSX.utils.aoa_to_sheet([]);
-    XLSX.utils.sheet_add_json(worksheet, data, { origin: 'B2' });
-    XLSX.utils.sheet_add_aoa(worksheet, [COLUMNS], { origin: 'B2' });
-    XLSX.utils.sheet_add_aoa(worksheet, [['', '', '', { f: `SUM(E3:E${data.length + 2})` }, '', { f: `SUM(G3:G${data.length + 2})` }, '', '', '']], { origin: `B${data.length + 3}` });
+    XLSX.utils.sheet_add_json(worksheet, data, { origin: 'A1' });
+    XLSX.utils.sheet_add_aoa(worksheet, [COLUMNS], { origin: 'A1' });
+    XLSX.utils.sheet_add_aoa(worksheet, [['', '', { f: `SUM(C2:C${data.length})` }, '', { f: `SUM(E3:E${data.length})` }, '', '', '']], { origin: `A${data.length + 2}` });
 
     data.forEach((item, index) => {
-        let row = (index + 3);
-        worksheet[`J${row}`].l = { Target: item.link };
-        worksheet[`G${row}`].f = `E${row}*F${row}`;
+        let row = (index + 2);
+        worksheet[`H${row}`].l = { Target: item.link };
+        worksheet[`E${row}`].f = `C${row}*D${row}`;
     });
 
     if (!worksheet["!cols"]) worksheet["!cols"] = [];
 
-    for (let col = 0; col < 10; col++) {
+    for (let col = 0; col < 9; col++) {
         if (!worksheet["!cols"][col]) worksheet["!cols"][col] = { wch: 8 };
     }
 
-    worksheet["!cols"][0].wpx = 20;
-    worksheet["!cols"][1].wpx = 20;
-    worksheet["!cols"][2].wpx = 150;
-    worksheet["!cols"][3].wpx = 400;
-    worksheet["!cols"][7].wpx = 70;
-    worksheet["!cols"][8].wpx = 70;
-    worksheet["!cols"][9].wpx = 600;
+    worksheet["!cols"][0].wpx = 150;
+    worksheet["!cols"][1].wpx = 400;
+    worksheet["!cols"][5].wpx = 70;
+    worksheet["!cols"][6].wpx = 70;
+    worksheet["!cols"][7].wpx = 600;
 
     let borderStyle = { style: 'thin', color: { rgb: 'FF000000' } };
     let border = {
@@ -111,10 +108,10 @@ function exportCardsXlsx(cards) {
         left: borderStyle
     };
 
-    for (let col of "BCDEFGHIJ") {
-        var alignment = col == 'H' || col == 'I' ? 'center' : 'left';
+    for (let col of "ABCDEFGH") {
+        var alignment = col == 'F' || col == 'G' ? 'center' : 'left';
 
-        worksheet[`${col}2`].s = {
+        worksheet[`${col}1`].s = {
             font: {
                 name: "Calibri",
                 sz: 11,
@@ -129,12 +126,12 @@ function exportCardsXlsx(cards) {
             }
         }
 
-        for (let row = 3; row <= data.length + 3; row++) {
-            if (col == 'E' || col == 'F' || col == 'G') {
+        for (let row = 2; row <= data.length + 2; row++) {
+            if (col == 'C' || col == 'D' || col == 'E') {
                 alignment = 'right';
             }
 
-            let color = col == 'J' ? 'FF0563C1' : 'FF000000';
+            let color = col == 'H' ? 'FF0563C1' : 'FF000000';
 
             worksheet[`${col}${row}`].s = {
                 font: {
@@ -168,10 +165,10 @@ function exportCardsCsv(cards) {
         let total = card.count * card.price;
         totalCount += card.count;
         totalAmount += total;
-        data.push(`;${personName};${cardName};${card.count};${card.price};${total};${card.condition};${card.condition};${card.link}`);
+        data.push(`${personName};${cardName};${card.count};${card.price};${total};${card.condition};${card.condition};${card.link}`);
     });
 
-    data.push(`;;;${totalCount};;${totalAmount};;;`);
+    data.push(`;;${totalCount};;${totalAmount};;;`);
 
     return data.join("\n");
 }

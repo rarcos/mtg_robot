@@ -4,7 +4,7 @@ const URL_CARDKINGDOM = "https://www.cardkingdom.com/cart";
 chrome.webNavigation.onDOMContentLoaded.addListener(details => {
     chrome.scripting.executeScript({
         target: { tabId: details.tabId },
-        files: ['./assets/xlsx.bundle.js']
+        files: ['./xlsx.bundle.js']
     }).then(() => console.log("XLSX injected"));
 });
 

@@ -4,7 +4,7 @@ const URL_CARDKINGDOM = "https://www.cardkingdom.com/cart";
 chrome.webNavigation.onDOMContentLoaded.addListener(details => {
     chrome.scripting.executeScript({
         target: { tabId: details.tabId },
-        files: ['./xlsx.bundle.js']
+        files: ['./assets/xlsx.bundle.js']
     }).then(() => console.log("XLSX injected"));
 });
 
@@ -29,11 +29,13 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
                 tab.id,
                 { action: action }
             ).then(cardsResponse => {
+                let date = new Date();
+                let formattedDate = date.toISOString().split('T')[0];
                 switch (info.menuItemId) {
                     case 'mtg_export_xslx':
                         chrome.tabs.sendMessage(
                             tab.id,
-                            { action: 'export_cards_xlsx', data: cardsResponse.cards }
+                            { action: 'export_cards_xlsx', data: cardsResponse.cards, date: formattedDate }
                         );
                         break;
                     case 'mtg_export_csv':
@@ -52,7 +54,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
                             chrome.downloads.download({
                                 url: csvData,
-                                filename: 'cards.csv'
+                                filename: `Pedido ${exportResponse.personName} ${formattedDate}.csv`
                             }).then(() => {
                                 if (isFirefox) {
                                     URL.revokeObjectURL(csvData);

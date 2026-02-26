@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "MTG Robot",
   "description": "MTG Robot",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "permissions": [
     "contextMenus",
     "activeTab",
@@ -37,6 +37,15 @@
         "mtg_export.js"
       ],
       "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["scripts/xlsx.bundle.js"],
+      "matches": [
+        "https://www.mtgmintcard.com/*",
+        "https://www.cardkingdom.com/*"
+      ]
     }
   ],
   "firefox:browser_specific_settings": {

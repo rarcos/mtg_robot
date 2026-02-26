@@ -12,10 +12,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             sendResponse({ cards: addAllCardsCK() });
             break;
         case 'export_cards_xlsx':
-            exportCardsXlsx(request.data);
+            exportCardsXlsx(request.data, promptForName(), request.date);
             break;
         case 'export_cards_csv':
-            sendResponse({ data: exportCardsCsv(request.data) });
+            let personName = promptForName()
+            sendResponse({ data: exportCardsCsv(request.data, personName), personName: personName });
             break;
     }
 });
@@ -58,15 +59,14 @@ function addAllCardsCK() {
         } else {
             return;
         }
-        let price = node.querySelector('div.item-price-wrapper').textContent;
+        let price = node.querySelector('div.item-price-wrapper small').textContent;
         card.price = parseFloat(price.replace(/[^\d.-]/g, ''));
         cards.push(card);
     });
     return cards;
 }
 
-function exportCardsXlsx(cards) {
-    let personName = promptForName();
+function exportCardsXlsx(cards, personName, date) {
     var data = [];
 
     cards.forEach(card => {
@@ -87,7 +87,7 @@ function exportCardsXlsx(cards) {
     let worksheet = XLSX.utils.aoa_to_sheet([]);
     XLSX.utils.sheet_add_json(worksheet, data, { origin: 'A1' });
     XLSX.utils.sheet_add_aoa(worksheet, [COLUMNS], { origin: 'A1' });
-    XLSX.utils.sheet_add_aoa(worksheet, [['', '', { f: `SUM(C2:C${data.length})` }, '', { f: `SUM(E3:E${data.length})` }, '', '', '']], { origin: `A${data.length + 2}` });
+    XLSX.utils.sheet_add_aoa(worksheet, [['', '', { f: `SUM(C2:C${data.length + 1})` }, '', { f: `SUM(E2:E${data.length + 1})` }, '', '', '']], { origin: `A${data.length + 2}` });
 
     data.forEach((item, index) => {
         let row = (index + 2);
@@ -158,11 +158,10 @@ function exportCardsXlsx(cards) {
     }
 
     XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-    XLSX.writeFile(workbook, "cards.xlsx");
+    XLSX.writeFile(workbook, `Pedido ${personName} ${date}.xlsx`);
 }
 
-function exportCardsCsv(cards) {
-    let personName = promptForName();
+function exportCardsCsv(cards, personName) {
     var data = [COLUMNS.join(';')];
     var totalCount = 0;
     var totalAmount = 0;

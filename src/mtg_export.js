@@ -44,9 +44,10 @@ function addAllCardsCK() {
         let card = new Card();
         let link = node.querySelector('a.product-link');
         card.name = link.querySelector('span.title').textContent.split('\n')[0].trim();
-        let edition = link.querySelector('span.edition').textContent.split('\n');
-        card.edition = edition[0].trim();
-        card.rarity = edition[1].trim().replace('(', '').replace(')', '');
+        let editionRegex = /^(.+)\s+(\([A-Z]\))$/;
+        let editionMatch = link.querySelector('span.edition').textContent.trim().match(editionRegex);
+        card.edition = editionMatch[1];
+        card.rarity = editionMatch[2];
         card.condition = link.querySelector('span.style').textContent.trim();
         let url = URL.parse(link.getAttribute('href').trim(), URL_CARDKINGDOM_BASE);
         card.link = url.toString();
